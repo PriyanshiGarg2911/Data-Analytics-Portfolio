@@ -1,0 +1,186 @@
+---
+title: "Analysis in R"
+author: "Priyanshi Garg"
+date: "2025-04-22"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+# 1. Intro to R
+This project is part of my learning journey to develop and practice my skills in data analysis using R.
+
+I have chosen the palmerpenguins dataset because it is widely used for practicing R and provides a clean, real-world dataset that’s great for exploring data science concepts.
+
+In this project, I will cover the full analysis workflow — including installing and loading packages, exploring and cleaning data, performing transformations, visualizing patterns, and summarizing key insights.
+
+
+# 2. Getting started
+
+To begin working with the data, I need to download and load the necessary packages — tidyverse for data manipulation and visualization, and palmerpenguins for the dataset itself.
+In R, this is done using the install.packages() function to install the package, and the library() function to load it into the session.
+
+
+### I will start by installing data
+
+```{r Installing data}
+install.packages("palmerpenguins")
+library(palmerpenguins)
+```
+
+### now lets install tidyverse
+
+```{r}
+install.packages("tidyverse")
+library(tidyverse)
+```
+
+Viewing data
+
+```{r viewing basic structure of data}
+#View(penguins_raw)
+glimpse(penguins)
+head(penguins,4)
+colnames(penguins)
+```
+
+# 3. Data Cleaning
+
+In this stage, I prepared the dataset for analysis and visualization by performing essential data cleaning steps.
+This included checking and correcting data types, identifying and handling missing values, and removing any duplicate rows.
+I also renamed the dataset to penguins_cleaned to reflect the cleaned version for further use in the project.
+
+Firstly I will understand my dataset 
+```{r results='hide'}
+colSums(is.na(penguins))
+```
+
+```{r to check for missing values}
+summary(penguins)
+```
+
+now we see some na values which we need to clean and renaming the columns.
+
+```{r removing missing values}
+penguins_cleaned<-penguins %>% 
+  drop_na() %>% 
+  rename(bill_length=bill_length_mm,
+         bill_depth=bill_depth_mm)
+summary(penguins_cleaned)
+
+```
+
+Check and convert data types By checking the data type we will get to know about the different data types of each column. If any data type is wrong then we can change it.
+
+```{r checking data type }
+str(penguins_cleaned)
+```
+
+year is "int" i.e. integer data type. We will convert it into "date" data type using as.date function
+
+```{r changing data type}
+penguins_cleaned$year <- as.Date(penguins_cleaned$year)
+head(penguins_cleaned,4) 
+```
+
+Check for duplicates. True means that there is duplication in data and false means no duplication.
+
+```{r checking for duplication,results='hide'}
+duplicated(penguins_cleaned)
+```
+
+there is no duplicate rows. But if there was any duplication we can use distinct function or unique to remove it.
+
+```{r removing duplication}
+distinct(penguins_cleaned,.keep_all= FALSE)
+# or use unique
+# unique(penguins_cleaned, incomparables = FALSE)
+```
+
+no duplicate value was present in data so no row is removed.
+
+Add/remove columns (mutate(), select()).
+
+```{r mutate }
+new<-mutate(penguins_cleaned, body_mass_kg=body_mass_g / 1000)
+
+```
+I  gave the table a new  name . To  save the new column that I made. 
+Now I will  delete the old column
+```{r deleting a column}
+penguins_cleaned<- new %>% 
+  select(-body_mass_g)
+head(penguins_cleaned,4)
+#View(penguins_cleaned)
+```
+
+Use pipes (%\>%) for chaining operations. And using nested functions like filter(arrange (penguin))
+```{r  nested functions}
+#nested functions
+
+filtered <- arrange ( filter(penguins_cleaned, island=="Torgersen" ),year )
+summary(filtered)
+head(filtered)
+#we  can  do  the same  with pipes
+filtered_data<- penguins_cleaned %>% 
+  filter(island=="Biscoe") %>% 
+  arrange(year)
+head(filtered_data)
+```
+
+
+
+# 4.Data Visualization
+In this stage, I worked with the penguins_cleaned dataset to practice creating visualizations using the ggplot2 package.
+I created a few charts to explore different relationships in the data and experimented with various features such as aesthetics, geometries (geom_*), faceting, labels, and annotations to enhance the clarity and presentation of the plots.
+
+
+```{r}
+library(ggplot2)
+```
+
+```{r}
+chart1<- ggplot(penguins_cleaned,mapping = aes(x=bill_length,y=bill_depth,color=species) )+geom_point()
+chart1
+```
+I have created a simple scattered plot chart.I have named this chart as "chart1" to refer in coming up steps. I can add so many more elements in this.
+###Add axis labels, titles, and caption in this chart.
+
+```{r}
+chart1+labs(title = "penguins",caption = "www.peng.com",subtitle = "3 species" )
+```
+
+Use facet_wrap() to compare categories.
+
+```{r}
+chart1+facet_grid(species~year)
+```
+now lets add a annotation 
+```{r}
+chart1+annotate('text',x=45.5,y=21.5,label="high_bill_depth",fontface = 'bold')
+```
+
+# 5. Summary Statistics
+In this section, I used summarizing tools such as group_by() and summarise() to generate key insights from the dataset. These functions allowed me to calculate group-wise statistics, such as minimum and maximum values of bill length across different islands, helping me better understand the structure and patterns within the data.
+```{r}
+penguins_cleaned %>% 
+group_by(island) %>%
+ drop_na() %>% 
+summarise(max_bill_length= max(bill_length), min_bill_length= min(bill_length)) 
+```
+
+# 8. Summary & Learnings
+
+This project took me through the complete data analysis workflow — from installing and loading a data set to cleaning, transforming, and visualizing the data using R. It was a great experience that helped reinforce both my technical and documentation skills.
+
+I’m especially proud of the following:
+
+* Learning how to document my work clearly using RMarkdown
+
+* Practicing clean and readable code through tidyverse tools like dplyr and ggplot2
+
+* Presenting my analysis in a structured, professional format
+
+
+As I continue learning, I plan to add more insights and observations from the data set, along with additional visualizations or statistical summaries.
+
